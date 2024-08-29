@@ -4,50 +4,29 @@ import (
 	"fmt"
 	"net"
 	"sync"
-
-	"github.com/sandronister/generate-devices/internal/service"
 )
 
 var wg = sync.WaitGroup{}
-var j = 0
-var server = 1
 
 func send() {
+	listPaises := []string{"Brasil", "Argentina", "Chile", "Uruguai", "Paraguai", "Bolívia", "Peru", "Colômbia", "Venezuela", "Equador", "Guiana", "Suriname", "Guiana Francesa"}
 
-	for i := 0; i < 333; i++ {
+	for _, item := range listPaises {
 		conn, err := net.Dial("tcp", "localhost:3005")
 		if err != nil {
-			fmt.Println("Erro ao conectar:", err)
 			return
 		}
 
 		defer conn.Close()
-		data := make([]byte, 1024)
-		for i := 0; i < 1024; i++ {
-			data[i] = byte(i % 256) // Preencher com valores de 0 a 255
-		}
-		payload := service.NewPayload(0x1234, 0x01, data)
-		binaryData, err := payload.ToBinary()
-		if err != nil {
-			fmt.Println("Erro ao converter para binário:", err)
-			return
-		}
 
-		// Enviar o payload binário através da conexão
-		_, err = conn.Write(binaryData)
-		if err != nil {
-			j++
-			//fmt.Println("Erro ao enviar dados:", err)
-			return
-		}
+		_, err = conn.Write([]byte(item))
 
-		//fmt.Println("Payload enviado com sucesso")
+		if err != nil {
+			fmt.Println(err)
+
+		}
 
 	}
-	fmt.Println("Erros:", j)
-	j = 0
-	server++
-	fmt.Println("Server:", server)
 	wg.Done()
 }
 
