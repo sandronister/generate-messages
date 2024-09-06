@@ -1,28 +1,21 @@
 package main
 
 import (
-	"context"
-	"log"
-
-	"github.com/go-redis/redis/v8"
+	"github.com/sandronister/generate-messages/pkg/service"
+	"github.com/sandronister/go_broker/pkg/broker/factory"
 )
 
-var ctx = context.Background()
-
 func main() {
-	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379", // Endereço do Redis
-	})
 
-	// Adiciona mensagens ao stream
-	for i := 0; i < 10; i++ {
-		err := rdb.XAdd(ctx, &redis.XAddArgs{
-			Stream: "mystream",
-			Values: map[string]interface{}{"message": "Hello, World!", "id": i},
-		}).Err()
+	broker := factory.NewBroker(factory.REDIS, "localhost", 6379)
 
+	messages := service.GenerateMessage()
+
+	for _, message := range messages {
+		err := broker.Producer(&message)
 		if err != nil {
-			log.Fatalf("Erro ao adicionar mensagem ao stream: %v", err)
+			panic(err)
 		}
 	}
+
 }
